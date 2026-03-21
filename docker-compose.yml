@@ -1,0 +1,6 @@
+services:
+  tim-backend:
+    build: ./backend
+    container_name: tim-backend
+    ports:
+      - "8080:8080"
