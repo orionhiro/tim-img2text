@@ -1,11 +1,9 @@
 package com.orionhiro.tim_backend.service;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.concurrent.TimeUnit;
 
 import org.apache.coyote.BadRequestException;
 import org.junit.jupiter.api.Test;
@@ -14,10 +12,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.TestPropertySource;
-
-import io.minio.MinioClient;
 
 @ExtendWith(MockitoExtension.class)
 @TestPropertySource(properties = {
@@ -26,70 +24,30 @@ import io.minio.MinioClient;
 })
 public class TaskServiceTest {
     @Mock
-    private MinioClient minioClient;
+    private RedisTemplate<String, String> redisTemplate;
+
+    @Mock
+    private HashOperations<String, Object, Object> hashOperations;
+
+    @Mock
+    private ImageService imageService;
 
     @InjectMocks
     private TaskService taskService;
 
     @Test
-    void testEmptyFile(){
-        MockMultipartFile file = new MockMultipartFile(
-            "file",
-            "image.png",
-            "image/png",
-            "".getBytes());
-
-        assertThrows(BadRequestException.class, () -> taskService.addTask(file));
-
-    }
-
-    @Test
-    void testNullFile(){
-        assertThrows(BadRequestException.class, () -> taskService.addTask(null));
-    }
-
-    @Test
-    void testIncorrectContentType(){
-        MockMultipartFile file = new MockMultipartFile(
-            "file",
-            "image.png",
-            "application/json",
-            "".getBytes());
-
-        assertThrows(BadRequestException.class, () -> taskService.addTask(file));
-
-    }
-
-    @Test
-    void testIncorrectFileExtension(){
-        MockMultipartFile file = new MockMultipartFile(
-            "file",
-            "image.exe",
-            "image/png",
-            "".getBytes());
-
-        assertThrows(BadRequestException.class, () -> taskService.addTask(file));
-
-    }
-
-    @Test
-    void testBucketNotFound(){
+    void testAddTask(){
         try {
-            
-            MockMultipartFile file = new MockMultipartFile(
-                "file",
-                "image.png",
-                "image/png",
-                "CONTENT".getBytes());
+            when(imageService.saveImage(Mockito.any())).thenReturn("saved_file.png");
+            when(redisTemplate.opsForHash()).thenReturn(hashOperations);
+            doNothing().when(hashOperations).putAll(Mockito.anyString(), Mockito.anyMap());
+            when(redisTemplate.expire(Mockito.anyString(), Mockito.anyLong(), Mockito.any(TimeUnit.class))).thenReturn(true);
 
-            taskService.addTask(file);
-
-            verify(minioClient, times(1)).bucketExists(any());
-            verify(minioClient, times(1)).putObject(any());
-            
-        } catch (Exception e) {
+            taskService.addTask(new MockMultipartFile("file_to_save.png", "content".getBytes()));
+        } catch (BadRequestException e) {
             e.printStackTrace();
-        } 
+        }
+        
     }
 
 }
