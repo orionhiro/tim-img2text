@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 public class TaskService {
 
     private final ImageService imageService;
+    private final MessageService messageService;
     private final RedisTemplate<String, Object> redisTemplate;
 
     public Map<String, String> addTask(MultipartFile image) throws BadRequestException{
@@ -25,6 +26,11 @@ public class TaskService {
 
         redisTemplate.opsForHash().putAll(taskId, Map.of("status", "PENDING"));
         redisTemplate.expire(taskId, 60 * 60, TimeUnit.SECONDS);
+
+        messageService.send(Map.of(
+            "task_id", taskId,
+            "image_url", image_url
+        ));
 
         return Map.of(
             "task_id", taskId,
