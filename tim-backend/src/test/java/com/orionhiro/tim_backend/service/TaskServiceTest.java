@@ -32,6 +32,9 @@ public class TaskServiceTest {
     @Mock
     private ImageService imageService;
 
+    @Mock
+    private MessageService messageService;
+
     @InjectMocks
     private TaskService taskService;
 
@@ -42,6 +45,7 @@ public class TaskServiceTest {
             when(redisTemplate.opsForHash()).thenReturn(hashOperations);
             doNothing().when(hashOperations).putAll(Mockito.anyString(), Mockito.anyMap());
             when(redisTemplate.expire(Mockito.anyString(), Mockito.anyLong(), Mockito.any(TimeUnit.class))).thenReturn(true);
+            doNothing().when(messageService).send(Mockito.anyMap());
 
             taskService.addTask(new MockMultipartFile("file_to_save.png", "content".getBytes()));
         } catch (BadRequestException e) {
