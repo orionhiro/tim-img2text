@@ -22,6 +22,22 @@ services:
       OCR_INPUT: ${OCR_INPUT}
       OCR_OUTPUT: ${OCR_OUTPUT}
 
+  ocr-service:
+    build: ./ocr-service
+    container_name: ocr-service
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      OCR_INPUT: ${OCR_INPUT}
+      OCR_OUTPUT: ${OCR_OUTPUT}
+      MINIO_URL: ${MINIO_URL}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET}
   minio:
     image: quay.io/minio/minio
     container_name: minio
