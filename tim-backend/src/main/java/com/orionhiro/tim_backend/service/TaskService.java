@@ -9,6 +9,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.orionhiro.tim_backend.exception.TaskNotFoundException;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -36,5 +38,26 @@ public class TaskService {
             "task_id", taskId,
             "status", "PENDING"
         );
+    }
+
+    public Map<String, String> getTask(String id){
+        Map<String, String> task = (Map) redisTemplate.opsForHash().entries(id);
+
+        if(task == null || task.isEmpty()){
+            throw new TaskNotFoundException("Task with id " + id + " not found");
+        }
+
+        if(task.get("status").equals("FAILED") || task.get("status").equals("PENDING")){
+            return Map.of("status", task.get("status"));
+        }
+
+        return Map.of("status", task.get("status"), "result", task.get("result"));
+    }
+
+    public void updateTask(Map<String, String> taskInfo){
+        String taskId = taskInfo.get("task_id");
+
+        redisTemplate.opsForHash().put(taskId, "status", taskInfo.get("status"));
+        redisTemplate.opsForHash().put(taskId, "result", taskInfo.get("result"));
     }
 }
