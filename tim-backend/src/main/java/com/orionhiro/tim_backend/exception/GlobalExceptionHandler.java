@@ -57,4 +57,15 @@ public class GlobalExceptionHandler {
                     "error", "Unsupported Media Type"
                 ));
     }
+
+    @ExceptionHandler(TaskNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleTaskNotFoundExceptionException(Exception e){
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Map.of(
+                    "timestamp", LocalDateTime.now().toString(),
+                    "status", String.valueOf(HttpStatus.NOT_FOUND.value()),
+                    "error", e.getMessage()
+                ));
+    }
 }
