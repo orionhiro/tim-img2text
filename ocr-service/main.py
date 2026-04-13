@@ -12,13 +12,13 @@ def callback(channel, method, properties, body):
     message = json.loads(body.decode())
     print(f"[x] Received: {message}")
 
-    imageName = message["image_url"]
+    imageName = message["imageUrl"]
     path = LOCAL_PATH + imageName
 
     if not minioService.getFile(BUCKET_NAME, imageName, path):
         messageService.publish({
             "status": "FAILED",
-            "task_id": message["task_id"]
+            "taskId": message["taskId"]
         })
         return
 
@@ -27,7 +27,7 @@ def callback(channel, method, properties, body):
     text = ocrService.recognize(path)
 
     response = {
-        "task_id": message["task_id"],
+        "taskId": message["taskId"],
         "status": "SUCCESS",
         "result": text
     }

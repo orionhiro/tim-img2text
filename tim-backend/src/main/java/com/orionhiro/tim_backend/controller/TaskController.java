@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.orionhiro.tim_backend.dto.NewTaskResponse;
 import com.orionhiro.tim_backend.service.TaskService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,13 +26,13 @@ public class TaskController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
-    public Map<String, String> addTask(@RequestParam("image") MultipartFile image) throws BadRequestException{
+    public NewTaskResponse addTask(@RequestParam("image") MultipartFile image) throws BadRequestException{
         return taskService.addTask(image);
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Map<String, String> getTask(@PathVariable("id") String taskId){
+    public Object getTask(@PathVariable("id") String taskId){
         return taskService.getTask(taskId);
     }
 }
