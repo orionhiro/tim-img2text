@@ -5,9 +5,12 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - minio
-      - redis
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
     environment:
       MINIO_URL: ${MINIO_URL}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
@@ -66,6 +69,11 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq/
     environment:
